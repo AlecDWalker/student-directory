@@ -17,11 +17,11 @@ def input_students
        "november",
        "december"
        ]
-   name = gets.chomp
+   name = STDIN.gets.chomp
    while !name.empty? do
      while true do
        puts "Please enter a cohort month. If unknown, a default value will be set."
-       cohort = gets.chomp
+       cohort = STDIN.gets.chomp
        if months.include?(cohort)
            cohort = cohort.to_sym
            break
@@ -33,21 +33,21 @@ def input_students
        end
      end
      puts "Please enter any defining features"
-     features = gets.chomp
+     features = STDIN.gets.chomp
      @students << {name: name, cohort: cohort, features: features}
      if @students.count == 1
        puts "Now we have 1 student. Enter another?"
      else
        puts "Now we have #{@students.count} students. Enter another?"
      end
-     name = gets.chomp
+     name = STDIN.gets.chomp
    end
 end
 
 def interactive_menu
   loop do
     print_menu
-    process(gets.chomp)
+    process(STDIN.gets.chomp)
   end
 end
 
@@ -55,6 +55,7 @@ def print_menu
     puts "1. Input the students"
     puts "2. Show the students"
     puts "3. Save the list to students.csv"
+    puts "4. Load the list from students.csv"
     puts "9. Exit"
 end
 
@@ -67,11 +68,13 @@ end
 def process(selection)
   case selection
   when "1"
-    $students = input_students
+    input_students
   when "2"
     show_students
   when "3"
     save_students
+  when "4"
+    load_students
   when "9"
       exit
   else
@@ -110,6 +113,27 @@ def save_students
       file.puts csv_line
     end
     file.close
+end
+
+def load_students(filename = "students.csv")
+  file = File.open(filename, "r")
+  file.readlines.each do |line|
+  name, cohort = line.chomp.split(',')
+    @students << {name: name, cohort: cohort.to_sym}
+  end
+  file.close
+end
+
+def try_load_students
+  filename = ARGV.first
+  return if filename.nil?
+  if File.exists?(filename)
+    load_students(filename)
+      puts "Loaded #{@students.count} from #{filename}"
+  else
+    puts "Sorry, #{filename} doesn't exist."
+    exit
+  end
 end
 #cohorts = []
 #@students.each { |x| cohorts << x[:cohort] }
